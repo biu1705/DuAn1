@@ -1,9 +1,7 @@
 <?php
-
 require_once '../functions/database.php';
 require_once '../templates/header.php';
 require_once '../templates/sidebar.php';
-
 $db = new Database();
 $conn = $db->getConnection();
 
@@ -20,7 +18,7 @@ try {
 
     $stmt = $conn->query("SELECT COUNT(*) FROM orders");
     $totalOrders = $stmt->fetchColumn();
-    
+
     // Kiểm tra bảng posts có tồn tại không
     $stmt = $conn->query("SHOW TABLES LIKE 'posts'");
     $totalPosts = 0;
@@ -28,13 +26,14 @@ try {
     if ($stmt->rowCount() > 0) {
         $stmt = $conn->query("SELECT COUNT(*) FROM posts");
         $totalPosts = $stmt->fetchColumn();
-        
+
         // Lấy bài viết mới nhất
         $stmt = $conn->query("
-            SELECT p.*, u.username as author_name
-            FROM posts p 
-            LEFT JOIN users u ON p.author_id = u.id 
-            ORDER BY p.created_at DESC 
+            SELECT p.*, c.name as category_name, u.username as author_name
+            FROM posts p
+            LEFT JOIN categories c ON p.category_id = c.id
+            LEFT JOIN users u ON p.author_id = u.id
+            ORDER BY p.created_at DESC
             LIMIT 5
         ");
         $latestPosts = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -42,10 +41,10 @@ try {
 
     // Lấy sản phẩm mới nhất
     $stmt = $conn->query("
-        SELECT p.*, c.name as category_name 
-        FROM products p 
-        LEFT JOIN categories c ON p.category_id = c.id 
-        ORDER BY p.created_at DESC 
+        SELECT p.*, c.name as category_name
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.id
+        ORDER BY p.created_at DESC
         LIMIT 5
     ");
     $latestProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -53,9 +52,9 @@ try {
     // Lấy đơn hàng mới nhất
     $stmt = $conn->query("
         SELECT o.*, u.username, u.email
-        FROM orders o 
-        LEFT JOIN users u ON o.user_id = u.id 
-        ORDER BY o.created_at DESC 
+        FROM orders o
+        LEFT JOIN users u ON o.user_id = u.id
+        ORDER BY o.created_at DESC
         LIMIT 5
     ");
     $latestOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -63,9 +62,9 @@ try {
     // Lấy đơn hàng gần đây
     $stmt = $conn->query("
         SELECT o.*, u.username, u.email
-        FROM orders o 
-        LEFT JOIN users u ON o.user_id = u.id 
-        ORDER BY o.created_at DESC 
+        FROM orders o
+        LEFT JOIN users u ON o.user_id = u.id
+        ORDER BY o.created_at DESC
         LIMIT 10
     ");
     $recentOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
